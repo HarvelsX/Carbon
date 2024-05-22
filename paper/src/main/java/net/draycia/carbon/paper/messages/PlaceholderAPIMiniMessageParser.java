@@ -49,7 +49,7 @@ public final class PlaceholderAPIMiniMessageParser {
     private static boolean containsLegacyColorCodes(final String string) {
         final char[] charArray = string.toCharArray();
         for (int i = 0; i < charArray.length - 1; i++) {
-            if (charArray[i] == LegacyComponentSerializer.SECTION_CHAR
+            if ((charArray[i] == LegacyComponentSerializer.SECTION_CHAR || charArray[i] == LegacyComponentSerializer.AMPERSAND_CHAR)
                 && "0123456789AaBbCcDdEeFfKkLlMmNnOoRrXx".indexOf(charArray[i + 1]) > -1) {
                 return true;
             }
@@ -103,7 +103,11 @@ public final class PlaceholderAPIMiniMessageParser {
             } else {
                 final String key = "papi_generated_template_" + id;
                 id++;
-                tagResolver.tag(key, Tag.inserting(LegacyComponentSerializer.legacySection().deserialize(replaced)));
+                final Component component = LegacyComponentSerializer.legacySection().deserialize(
+                    // Replace all ampersands with section signs
+                    replaced.replace(LegacyComponentSerializer.AMPERSAND_CHAR, LegacyComponentSerializer.SECTION_CHAR)
+                );
+                tagResolver.tag(key, Tag.inserting(component));
                 matcher.appendReplacement(builder, Matcher.quoteReplacement("<" + key + ">"));
             }
         }
